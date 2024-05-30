@@ -10,8 +10,8 @@ esp32:
 logger:    
 
 wifi:
-  ssid: "quest"
-  password: "9168472728"
+  ssid: "your ssid"
+  password: "your wifi password"
   ap: {}
 
 api:
