@@ -1,0 +1,88 @@
+esphome:
+  name: esphome-web-6ad284
+  friendly_name: ESPHome Web 6ad284  
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:    
+
+wifi:
+  ssid: "quest"
+  password: "9168472728"
+  ap: {}
+
+api:
+  reboot_timeout: 0s
+
+ota:
+
+web_server: 
+
+globals:
+  - id: last_heartbeat
+    type: float
+    restore_value: no
+    initial_value: '0'
+  - id: reset_counter
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+sensor:
+  - platform: uptime
+    name: "Uptime Sensor"
+    id: uptime_sensor
+    update_interval: 1s
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO12
+    name: "Heartbeat Signal"
+    on_press:
+      then:
+        - lambda: |- 
+            id(last_heartbeat) = id(uptime_sensor).state;
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (id(uptime_sensor).state - id(last_heartbeat) > 10) {
+            // No heartbeat received for more than 10 seconds
+            id(relay).turn_on();
+            delay(500);  // Wait for 500ms
+            id(relay).turn_off();
+            id(last_heartbeat) = id(uptime_sensor).state;
+          }
+
+switch:
+  - platform: gpio
+    pin: GPIO21
+    inverted: true
+    id: relay
+    name: "Heartbeat Relay"
+    icon: "mdi:heart-pulse"
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      then:
+        - logger.log: "Relay turned on due to missed heartbeat."
+        - delay: 500ms  # Momentary delay
+        - switch.turn_off: relay  # Turn off after delay
+        - lambda: |-
+            id(reset_counter) += 1;  // Increment the reset counter
+            ESP_LOGD("main", "Reset counter: %d", id(reset_counter));  // Log the counter value
+    on_turn_off:
+      then:
+        - logger.log: "Relay turned off."
+        
+text_sensor:
+  - platform: template
+    name: "Reset Counter"
+    lambda: |-
+      char buffer[10];
+      itoa(id(reset_counter), buffer, 10);
+      return {buffer};
+    update_interval: 60s  # Update interval for the counter display
