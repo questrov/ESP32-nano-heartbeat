@@ -1,2 +1,14 @@
-# ESP32-nano-heartbeat
-ESPHome yaml running on HUZZAH ESP32 to monitor heartbeat via GPIO toggle on J1020 Jetson Nano
+# ESPHome Configuration for Heartbeat Monitoring and Relay Control
+This ESPHome configuration sets up an ESP32 device to monitor a heartbeat signal and control a relay based on the heartbeat status. The configuration includes sensors, a switch, and global variables to manage the logic.
+
+# Configuration Overview
+Device: ESP32
+Framework: Arduino
+Functionalities:
+Heartbeat signal monitoring
+Relay control based on heartbeat
+Uptime monitoring
+Reset counter for missed heartbeats
+Web server access
+Over-the-air (OTA) updates
+API access
